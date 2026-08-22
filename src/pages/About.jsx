@@ -213,7 +213,18 @@ const ManifestoSection = ({ reduced }) => {
       gsap.set(split.words, { opacity: 0.12 });
       gsap.to(split.words, {
         opacity: 1, ease: 'none', duration: 1, stagger: 0.6,
-        scrollTrigger: { trigger: sectionRef.current, start: 'top top', end: 'bottom bottom', scrub: 1 },
+        scrollTrigger: { 
+          trigger: sectionRef.current, 
+          start: 'top top', 
+          end: 'bottom bottom', 
+          scrub: 1,
+          snap: {
+            snapTo: [0, 1],
+            delay: 0.05,
+            duration: { min: 0.8, max: 1.2 },
+            ease: "power2.inOut"
+          }
+        },
       });
       gsap.fromTo('.ab-manifesto-label',
         { opacity: 0, y: 24 },

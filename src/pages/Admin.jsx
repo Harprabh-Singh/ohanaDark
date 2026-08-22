@@ -6,8 +6,8 @@
    menu items, house favourites, gallery frames, menu-book pages, team.
 
    AUTH — sign-in with two roles:
-     owner — everything + can create/remove admin accounts (Team view)
-     admin — all content changes, no account management
+     owner — everything + can create/remove owner AND admin accounts (Team view)
+     admin — all content changes, no account management (Team view hidden)
    Accounts live in ohana/auth.json on Cloudinary (SHA-256 hashed).
 ───────────────────────────────────────────────────────────────── */
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -772,6 +772,7 @@ function HomePageSection({ content, update, notify }) {
 function TeamSection({ users, session, saveUsers, notify }) {
   const [nu, setNu] = useState('');
   const [np, setNp] = useState('');
+  const [nr, setNr] = useState('admin');
   const [busy, setBusy] = useState(false);
 
   const run = async (fn) => {
@@ -780,27 +781,33 @@ function TeamSection({ users, session, saveUsers, notify }) {
     finally { setBusy(false); }
   };
 
-  const createAdmin = () => run(async () => {
+  const createAccount = () => run(async () => {
     const uname = nu.trim();
-    if (!uname || !np) { notify({ type: 'err', msg: 'Give the new admin a username and a password.' }); return; }
+    if (!uname || !np) { notify({ type: 'err', msg: 'Give the new account a username and a password.' }); return; }
     if (users.some((u) => u.username.toLowerCase() === uname.toLowerCase())) {
       notify({ type: 'err', msg: `“${uname}” already exists.` }); return;
     }
     const passHash = await hashPassword(uname, np);
-    const ok = await saveUsers([...users, { username: uname, role: 'admin', passHash, createdAt: new Date().toISOString() }]);
-    if (ok) { setNu(''); setNp(''); logActivity(`Created admin “${uname}”`); notify({ type: 'ok', msg: `Admin “${uname}” created.` }); }
+    const ok = await saveUsers([...users, { username: uname, role: nr, passHash, createdAt: new Date().toISOString() }]);
+    if (ok) { setNu(''); setNp(''); setNr('admin'); logActivity(`Created ${nr} “${uname}”`); notify({ type: 'ok', msg: `${nr === 'owner' ? 'Owner' : 'Admin'} “${uname}” created.` }); }
   });
 
   const removeUser = (uname) => run(async () => {
-    if (!window.confirm(`Remove account “${uname}”? They will no longer be able to sign in.`)) return;
+    const target = users.find((u) => u.username === uname);
+    if (!target) return;
+    // Never strand the panel without an owner
+    if (target.role === 'owner' && users.filter((u) => u.role === 'owner').length <= 1) {
+      notify({ type: 'err', msg: 'That is the last owner — create another owner before removing it.' }); return;
+    }
+    if (!window.confirm(`Remove ${target.role} account “${uname}”? They will no longer be able to sign in.`)) return;
     const ok = await saveUsers(users.filter((u) => u.username !== uname));
-    if (ok) { logActivity(`Removed account “${uname}”`); notify({ type: 'ok', msg: `“${uname}” removed.` }); }
+    if (ok) { logActivity(`Removed ${target.role} “${uname}”`); notify({ type: 'ok', msg: `“${uname}” removed.` }); }
   });
 
   return (
     <section>
       <SectionHead num="05" title="Team"
-        sub="Owner territory — create admin accounts or retire them." />
+        sub="Owner territory — create owner or admin accounts, or retire them. Admins can't touch this page." />
 
       <div style={{ display: 'grid', gap: '10px', marginBottom: '30px' }}>
         {users.map((u) => (
@@ -820,7 +827,7 @@ function TeamSection({ users, session, saveUsers, notify }) {
                 {u.role}{u.username === session.u ? ' · you' : ''}
               </span>
             </span>
-            {u.role !== 'owner' && u.username !== session.u && (
+            {u.username !== session.u && (
               <button type="button" style={dangerBtn} disabled={busy} onClick={() => removeUser(u.username)}>Remove</button>
             )}
           </div>
@@ -829,14 +836,20 @@ function TeamSection({ users, session, saveUsers, notify }) {
 
       <div style={{ border: `1px solid ${C.hairline}`, borderRadius: '3px', padding: '16px', background: C.panel }}>
         <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.28em', textTransform: 'uppercase', color: C.gold, marginBottom: '14px' }}>
-          Create an admin
+          Create an account
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0 12px' }}>
           <Field label="Username"><input style={inputStyle} value={nu} onChange={(e) => setNu(e.target.value)} autoComplete="off" /></Field>
           <Field label="Password"><input style={inputStyle} type="password" value={np} onChange={(e) => setNp(e.target.value)} autoComplete="new-password" /></Field>
+          <Field label="Role">
+            <select style={{ ...inputStyle, cursor: 'pointer' }} value={nr} onChange={(e) => setNr(e.target.value)}>
+              <option value="admin">Admin — edits content</option>
+              <option value="owner">Owner — full control</option>
+            </select>
+          </Field>
         </div>
-        <button type="button" style={ghostBtn} disabled={busy} onClick={createAdmin}>
-          {busy ? 'Saving…' : '+ Create admin'}
+        <button type="button" style={ghostBtn} disabled={busy} onClick={createAccount}>
+          {busy ? 'Saving…' : `+ Create ${nr}`}
         </button>
       </div>
     </section>
