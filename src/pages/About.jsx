@@ -215,7 +215,7 @@ const ManifestoSection = ({ reduced }) => {
       split = new SplitType(paraRef.current, { types: 'words' });
       gsap.set(split.words, { opacity: 0.12 });
 
-      const smoothScrollTo = (targetY, duration = 2.4) => {
+      const smoothScrollTo = (targetY, duration = 1.6) => {
         if (isSnappingRef.current) return;
         isSnappingRef.current = true;
         const preventScroll = (e) => { e.preventDefault(); };
@@ -226,7 +226,7 @@ const ManifestoSection = ({ reduced }) => {
         gsap.to(window, {
           scrollTo: { y: targetY, autoKill: false },
           duration,
-          ease: 'power1.inOut',
+          ease: 'power2.out',
           onComplete: () => {
             document.removeEventListener('wheel', preventScroll);
             document.removeEventListener('touchmove', preventScroll);
@@ -251,11 +251,12 @@ const ManifestoSection = ({ reduced }) => {
           if (!isSnappingRef.current && p > 0.05 && p < 0.95) {
             const scrollStart = self.start;
             const scrollEnd   = self.end;
-            const totalRange  = scrollEnd - scrollStart;
             if (self.direction === 1) {
-              smoothScrollTo(scrollStart + totalRange * 0.95);
+              // Scroll to 100% + 120px overshoot so momentum carries past the section
+              smoothScrollTo(scrollEnd + 120);
             } else {
-              smoothScrollTo(scrollStart);
+              // Scroll to 0% - 120px overshoot so momentum carries past the section
+              smoothScrollTo(Math.max(0, scrollStart - 120));
             }
           }
         }
