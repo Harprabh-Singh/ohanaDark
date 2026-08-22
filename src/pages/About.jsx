@@ -414,7 +414,16 @@ const JourneySection = ({ reduced }) => {
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '2px', background: C.hairline, zIndex: 6 }}>
           <div ref={fillRef} style={{ width: '100%', height: '100%', background: C.gold, transform: 'scaleY(0)' }} />
         </div>
+
         {chapters.map(chapterBlock)}
+
+        {/* Scroll down hint */}
+        <div className="ab-journey-hint" style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 10, pointerEvents: 'none' }}>
+          <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '0.42em', textTransform: 'uppercase', color: C.cream, fontFamily: BODY }}>Scroll Down</span>
+          <div style={{ position: 'relative', width: '1px', height: '40px', background: 'rgba(182,145,46,0.28)', overflow: 'hidden' }}>
+            <span className="ab-hint-dot" style={{ position: 'absolute', top: 0, left: '-1.5px', width: '4px', height: '4px', borderRadius: '50%', background: C.goldBright }} />
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -698,7 +707,7 @@ const VoicesSection = ({ reduced }) => {
             const idx = Math.min(N - 1, Math.floor(self.progress * N));
             if (idx !== activeRef.current && indexRef.current) {
               activeRef.current = idx;
-              indexRef.current.textContent = `0${idx + 1}/0${N}`;
+              indexRef.current.textContent = `0${idx + 1} — 0${N}`;
             }
           },
         },
@@ -739,10 +748,18 @@ const VoicesSection = ({ reduced }) => {
         <div style={{ position: 'absolute', top: 'clamp(88px, 13vh, 120px)', left: 0, right: 0, display: 'flex', justifyContent: 'center', zIndex: 6 }}>
           <GoldLabel center>What They Say</GoldLabel>
         </div>
-        <div ref={indexRef} style={{ position: 'absolute', bottom: 'clamp(36px, 7vh, 64px)', left: 0, right: 0, textAlign: 'center', zIndex: 6, fontFamily: BODY, fontSize: '10px', fontWeight: 700, letterSpacing: '0.4em', color: C.faint }}>
-          01/0{N}
+        <div ref={indexRef} style={{ position: 'absolute', top: 'clamp(88px, 12vh, 110px)', right: 'clamp(22px, 6vw, 96px)', zIndex: 6, fontFamily: BODY, fontSize: '11px', fontWeight: 700, letterSpacing: '0.35em', color: C.gold }}>
+          01 — 0{N}
         </div>
         {quotes.map(quoteBlock)}
+
+        {/* Scroll down hint */}
+        <div className="ab-voices-hint" style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 10, pointerEvents: 'none' }}>
+          <span style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '0.42em', textTransform: 'uppercase', color: C.cream, fontFamily: BODY }}>Scroll Down</span>
+          <div style={{ position: 'relative', width: '1px', height: '40px', background: 'rgba(182,145,46,0.28)', overflow: 'hidden' }}>
+            <span className="ab-hint-dot" style={{ position: 'absolute', top: 0, left: '-1.5px', width: '4px', height: '4px', borderRadius: '50%', background: C.goldBright }} />
+          </div>
+        </div>
       </div>
     </section>
   );
