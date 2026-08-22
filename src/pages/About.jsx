@@ -221,6 +221,8 @@ const ManifestoSection = ({ reduced }) => {
         const preventScroll = (e) => { e.preventDefault(); };
         document.addEventListener('wheel', preventScroll, { passive: false });
         document.addEventListener('touchmove', preventScroll, { passive: false });
+        if (window.lenis) window.lenis.stop();
+
         gsap.to(window, {
           scrollTo: { y: targetY, autoKill: false },
           duration,
@@ -228,6 +230,7 @@ const ManifestoSection = ({ reduced }) => {
           onComplete: () => {
             document.removeEventListener('wheel', preventScroll);
             document.removeEventListener('touchmove', preventScroll);
+            if (window.lenis) window.lenis.start();
             setTimeout(() => { isSnappingRef.current = false; }, 400);
           },
         });
@@ -831,6 +834,7 @@ const About = () => {
         smoothTouch: false,
         touchMultiplier: 2,
       });
+      window.lenis = lenis;
       lenis.on('scroll', ScrollTrigger.update);
       rafCb = (time) => lenis.raf(time * 1000);
       gsap.ticker.add(rafCb);
@@ -845,6 +849,7 @@ const About = () => {
       window.removeEventListener('load', refresh);
       if (rafCb) gsap.ticker.remove(rafCb);
       if (lenis) lenis.destroy();
+      delete window.lenis;
       document.body.style.backgroundColor = '';
       document.documentElement.style.backgroundColor = '';
     };
