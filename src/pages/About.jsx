@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import SplitType from 'split-type';
 import Lenis from 'lenis';
 import { ArrowRight } from 'lucide-react';
 import { testimonials } from '../data/testimonials';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 /* ─── Design tokens ─────────────────────────────────────────── */
 const C = {
@@ -204,6 +205,8 @@ const ManifestoSection = ({ reduced }) => {
     { t: 'and strangers leave as ' }, { t: 'regulars.', serif: true },
   ];
 
+  const isSnappingRef = useRef(false);
+
   useEffect(() => {
     if (!sectionRef.current || !paraRef.current) return;
     let split = null;
@@ -211,20 +214,48 @@ const ManifestoSection = ({ reduced }) => {
       if (reduced) return; // static: words fully visible
       split = new SplitType(paraRef.current, { types: 'words' });
       gsap.set(split.words, { opacity: 0.12 });
-      gsap.to(split.words, {
+
+      const smoothScrollTo = (targetY, duration = 1.2) => {
+        if (isSnappingRef.current) return;
+        isSnappingRef.current = true;
+        const preventScroll = (e) => { e.preventDefault(); };
+        document.addEventListener('wheel', preventScroll, { passive: false });
+        document.addEventListener('touchmove', preventScroll, { passive: false });
+        gsap.to(window, {
+          scrollTo: { y: targetY, autoKill: false },
+          duration,
+          ease: 'power1.inOut',
+          onComplete: () => {
+            document.removeEventListener('wheel', preventScroll);
+            document.removeEventListener('touchmove', preventScroll);
+            setTimeout(() => { isSnappingRef.current = false; }, 400);
+          },
+        });
+      };
+
+      const anim = gsap.to(split.words, {
         opacity: 1, ease: 'none', duration: 1, stagger: 0.6,
-        scrollTrigger: { 
-          trigger: sectionRef.current, 
-          start: 'top top', 
-          end: 'bottom bottom', 
-          scrub: 1,
-          snap: {
-            snapTo: [0, 1],
-            delay: 0.05,
-            duration: { min: 0.8, max: 1.2 },
-            ease: "power2.inOut"
+      });
+
+      ScrollTrigger.create({ 
+        trigger: sectionRef.current, 
+        start: 'top top', 
+        end: 'bottom bottom', 
+        scrub: 1,
+        animation: anim,
+        onUpdate: (self) => {
+          const p = self.progress;
+          if (!isSnappingRef.current && p > 0.05 && p < 0.95) {
+            const scrollStart = self.start;
+            const scrollEnd   = self.end;
+            const totalRange  = scrollEnd - scrollStart;
+            if (self.direction === 1) {
+              smoothScrollTo(scrollStart + totalRange * 0.95);
+            } else {
+              smoothScrollTo(scrollStart);
+            }
           }
-        },
+        }
       });
       gsap.fromTo('.ab-manifesto-label',
         { opacity: 0, y: 24 },
