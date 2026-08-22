@@ -215,7 +215,7 @@ const ManifestoSection = ({ reduced }) => {
       split = new SplitType(paraRef.current, { types: 'words' });
       gsap.set(split.words, { opacity: 0.12 });
 
-      const smoothScrollTo = (targetY, duration = 1.2) => {
+      const smoothScrollTo = (targetY, duration = 2.4) => {
         if (isSnappingRef.current) return;
         isSnappingRef.current = true;
         const preventScroll = (e) => { e.preventDefault(); };
