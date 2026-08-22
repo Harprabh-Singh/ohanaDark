@@ -184,20 +184,11 @@ const PanChapter = ({ ch, ci, reduced, onOpen, total }) => {
   useEffect(() => {
     if (!containerRef.current || reduced) return;
     const ctx = gsap.context(() => {
-      const sec = containerRef.current;
       const track = trackRef.current;
       const frames = gsap.utils.toArray(track.querySelectorAll('.gl-pan-item'));
       const colors = frames.map((f) => f.querySelector('.gl-color'));
       const scales = frames.map((f) => f.querySelector('.gl-pan-scale'));
-      
-      let pinWrapWidth;
-      let horizontalScrollLength;
-
-      function refresh() {
-        pinWrapWidth = track.scrollWidth;
-        horizontalScrollLength = Math.max(0, pinWrapWidth - window.innerWidth);
-      }
-      refresh();
+      const maxX = () => Math.max(0, track.scrollWidth - window.innerWidth);
 
       /* Focus pull — frame nearest centre: full colour + scale 1 */
       const updateFocus = () => {
@@ -219,19 +210,14 @@ const PanChapter = ({ ch, ci, reduced, onOpen, total }) => {
       };
 
       const stBase = {
-        scrub: true,
-        trigger: sec,
-        pin: sec,
-        start: 'center center',
-        end: () => `+=${pinWrapWidth}`,
-        invalidateOnRefresh: true,
-        onUpdate: updateFocus
+        trigger: containerRef.current, start: 'top top', end: 'bottom bottom',
+        scrub: true, invalidateOnRefresh: true,
       };
 
       /* The pan itself — direction alternates per chapter */
       gsap.fromTo(track,
-        { x: () => (reverse ? -horizontalScrollLength : 0) },
-        { x: () => (reverse ? 0 : -horizontalScrollLength), ease: 'none', scrollTrigger: stBase }
+        { x: () => (reverse ? -maxX() : 0) },
+        { x: () => (reverse ? 0 : -maxX()), ease: 'none', scrollTrigger: { ...stBase, onUpdate: updateFocus } }
       );
 
       /* Depth — inner image counter-parallaxes against the pan */
@@ -248,12 +234,8 @@ const PanChapter = ({ ch, ci, reduced, onOpen, total }) => {
       });
 
       updateFocus();
-      ScrollTrigger.addEventListener('refreshInit', refresh);
       ScrollTrigger.addEventListener('refresh', updateFocus);
-      return () => {
-        ScrollTrigger.removeEventListener('refreshInit', refresh);
-        ScrollTrigger.removeEventListener('refresh', updateFocus);
-      };
+      return () => ScrollTrigger.removeEventListener('refresh', updateFocus);
     }, containerRef);
     return () => ctx.revert();
   }, [reduced, reverse]);
@@ -295,10 +277,10 @@ const PanChapter = ({ ch, ci, reduced, onOpen, total }) => {
   }
 
   return (
-    <section ref={containerRef} className="gl-walk-chapter" style={{ position: 'relative', height: '100svh', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, height: '100svh', overflow: 'hidden' }}>
+    <div ref={containerRef} className="gl-walk-chapter" style={{ position: 'relative', height: `${N * 70 + 100}vh` }}>
+      <div style={{ position: 'sticky', top: 0, height: '100svh', overflow: 'hidden' }}>
         {/* Horizontal frame track */}
-        <div ref={trackRef} className="gl-pan-track" style={{ display: 'flex', flexWrap: 'nowrap', willChange: 'transform', position: 'relative', height: '100%' }}>
+        <div ref={trackRef} className="gl-pan-track">
           {ch.items.map((item) => (
             <figure key={item.index} className="gl-pan-item" onClick={() => onOpen(item.index)}
               style={{ margin: 0, flexShrink: 0, cursor: 'pointer' }}>
@@ -334,7 +316,7 @@ const PanChapter = ({ ch, ci, reduced, onOpen, total }) => {
           <div ref={fillRef} style={{ width: '100%', height: '100%', background: C.gold, transform: 'scaleX(0)' }} />
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
