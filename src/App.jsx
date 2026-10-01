@@ -11,6 +11,7 @@ import About from './pages/About';
 import Reservations from './pages/Reservations';
 import Contact from './pages/Contact';
 import Admin from './pages/Admin';
+import { useContent } from './content/ContentContext';
 
 const pageTransition = {
   initial: { opacity: 0, y: 20 },
@@ -46,6 +47,36 @@ const ScrollToTop = () => {
 function App() {
   const location = useLocation();
   const isAdmin = location.pathname === '/admin';
+  const { content } = useContent() || {};
+
+  // Eagerly preload heavy/important images in the background
+  useEffect(() => {
+    if (!content) return;
+    const urlsToPreload = [];
+    
+    // Preload flipbook pages
+    if (content.menuPages) urlsToPreload.push(...content.menuPages);
+    
+    // Preload showcase hero images
+    if (content.showcase) {
+      content.showcase.forEach(s => {
+        if (s.img) urlsToPreload.push(s.img);
+      });
+    }
+    
+    // Preload palate/experiences/gallery
+    if (content.palate) content.palate.forEach(p => p.image && urlsToPreload.push(p.image));
+    if (content.experiences) content.experiences.forEach(e => e.image && urlsToPreload.push(e.image));
+    if (content.gallery) content.gallery.forEach(g => g.src && urlsToPreload.push(g.src));
+
+    // Fire off requests (browser caches them)
+    urlsToPreload.forEach(url => {
+      if (url) {
+        const img = new Image();
+        img.src = url;
+      }
+    });
+  }, [content]);
 
   return (
     <div className="min-h-screen bg-cream text-text-dark">
