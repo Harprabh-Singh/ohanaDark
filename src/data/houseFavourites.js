@@ -12,7 +12,7 @@ export const DISHES = [
     price: 320,
     tag: 'SIGNATURE',
     accent: '#E8742A',
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1400&q=90',
+    image: '/admin-images/fav-1-tandoori-pizza.avif',
     imgPos: 'right',
   },
   {
@@ -24,7 +24,7 @@ export const DISHES = [
     price: 280,
     tag: 'MOST ORDERED',
     accent: '#D42020',
-    image: 'https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=1400&q=90',
+    image: '/admin-images/fav-2-dragon-wings.avif',
     imgPos: 'left',
   },
   {
@@ -36,7 +36,7 @@ export const DISHES = [
     price: 180,
     tag: 'CHEF PICK',
     accent: '#C42D78',
-    image: 'https://images.unsplash.com/photo-1553787499-6f9133242796?auto=format&fit=crop&w=1400&q=90',
+    image: '/admin-images/fav-3-chunky-shake.avif',
     imgPos: 'right',
   },
   {
@@ -48,7 +48,7 @@ export const DISHES = [
     price: 220,
     tag: 'CHEF PICK',
     accent: '#B6912E',
-    image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1400&q=90',
+    image: '/admin-images/fav-4-club-sandwich.avif',
     imgPos: 'left',
   },
   {
@@ -60,7 +60,7 @@ export const DISHES = [
     price: 160,
     tag: 'FAN FAVOURITE',
     accent: '#7B3F00',
-    image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=1400&q=90',
+    image: '/admin-images/fav-5-chocolate-brownie.avif',
     imgPos: 'right',
   },
 ];
