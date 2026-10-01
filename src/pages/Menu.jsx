@@ -272,10 +272,15 @@ export default function Menu() {
       if (flipBookRef.current && flipBookRef.current.goToPage) {
         const gallery = document.getElementById('menu-gallery');
         if (gallery) {
-          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          gallery.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+          gallery.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        flipBookRef.current.goToPage(flip, side);
+        
+        setTimeout(() => {
+          if (flipBookRef.current && flipBookRef.current.goToPage) {
+            flipBookRef.current.goToPage(flip, side);
+          }
+        }, 800);
+        
         setSearchParams({}, { replace: true }); // consume the deep link
         return;
       }
@@ -452,7 +457,10 @@ export default function Menu() {
 
           {/* CTAs */}
           <div className="mr" style={{ opacity: 0, display: 'flex', gap: '14px', flexWrap: 'wrap', marginBottom: '52px' }}>
-            <a href="#menu-gallery" style={{
+            <a href="#menu-gallery" onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('menu-gallery')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }} style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               background: '#B6912E', color: '#000',
               textDecoration: 'none', padding: '14px 32px', borderRadius: '100px',
