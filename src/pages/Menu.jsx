@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { categoryData } from '../data/menuData';
 import FlipBook from '../components/FlipBook';
 import { useContent } from '../content/ContentContext';
 import { defaultMenuStats } from '../content/defaults';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 /* ─── Accent palette — cycles through 5 restaurant-toned colors ─── */
 const PALETTE = ['#B6912E', '#C42D78', '#E8742A', '#D42020', '#6B8F6B'];
@@ -270,18 +271,22 @@ export default function Menu() {
     const tryJump = () => {
       if (cancelled) return;
       if (flipBookRef.current && flipBookRef.current.goToPage) {
-        const gallery = document.getElementById('menu-gallery');
-        if (gallery) {
-          gallery.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        
         setTimeout(() => {
-          if (flipBookRef.current && flipBookRef.current.goToPage) {
-            flipBookRef.current.goToPage(flip, side);
+          if (cancelled) return;
+          const gallery = document.getElementById('menu-gallery');
+          if (gallery) {
+            gsap.to(window, { duration: 1.4, scrollTo: '#menu-gallery', ease: 'power3.inOut' });
           }
-        }, 800);
+          
+          setTimeout(() => {
+            if (cancelled) return;
+            if (flipBookRef.current && flipBookRef.current.goToPage) {
+              flipBookRef.current.goToPage(flip, side);
+            }
+            setSearchParams({}, { replace: true }); // consume the deep link after animations
+          }, 1400); // Wait for the scroll to finish
+        }, 1000);
         
-        setSearchParams({}, { replace: true }); // consume the deep link
         return;
       }
       // Book not mounted yet (page transitions / hero entrance) — retry ~2s
@@ -459,7 +464,7 @@ export default function Menu() {
           <div className="mr" style={{ opacity: 0, display: 'flex', gap: '14px', flexWrap: 'wrap', marginBottom: '52px' }}>
             <a href="#menu-gallery" onClick={(e) => {
               e.preventDefault();
-              document.getElementById('menu-gallery')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              gsap.to(window, { duration: 1.4, scrollTo: '#menu-gallery', ease: 'power3.inOut' });
             }} style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               background: '#B6912E', color: '#000',
